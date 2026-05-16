@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 224 26% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 244 82% 66%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 220 16% 94%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 244 90% 97%;
+  --accent-foreground: 244 82% 40%;
+  --border: 220 16% 88%;
+  --input: 220 16% 88%;
+  --ring: 244 82% 66%;
+}
+
+.dark {
+  --background: 228 22% 5%;
+  --foreground: 220 25% 98%;
+  --card: 228 20% 8%;
+  --card-foreground: 220 25% 98%;
+  --primary: 247 86% 70%;
+  --primary-foreground: 228 22% 5%;
+  --secondary: 228 16% 12%;
+  --secondary-foreground: 220 25% 98%;
+  --muted: 228 16% 12%;
+  --muted-foreground: 218 12% 75%;
+  --accent: 228 20% 14%;
+  --accent-foreground: 220 25% 98%;
+  --border: 228 16% 16%;
+  --input: 228 16% 16%;
+  --ring: 247 86% 70%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  @apply bg-background text-foreground antialiased selection:bg-primary/30;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.05) 0%, transparent 40%);
+  min-height: 100vh;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-md border border-white/5 shadow-xl;
+  }
+  
+  .enterprise-input {
+    @apply bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-200 outline-none;
+  }
+  
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-white/5 text-muted-foreground hover:text-foreground;
+  }
+  
+  .nav-item-active {
+    @apply bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted/50 rounded-full hover:bg-muted transition-colors;
+}
+
+.animate-in {
+  animation: animate-in 0.4s ease-out forwards;
+}
+
+@keyframes animate-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+

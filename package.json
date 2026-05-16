@@ -1,0 +1,22 @@
+{
+  "name": "team-task-manager",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev --workspace @team-task-manager/web",
+    "dev:api": "npm run dev --workspace @team-task-manager/api",
+    "build": "npm run build --workspace @team-task-manager/api && npm run build --workspace @team-task-manager/web",
+    "lint": "npm run lint --workspace @team-task-manager/api && npm run lint --workspace @team-task-manager/web",
+    "db:generate": "npm run prisma:generate --workspace @team-task-manager/api",
+    "db:migrate": "npm run prisma:migrate --workspace @team-task-manager/api",
+    "db:seed": "npm run prisma:seed --workspace @team-task-manager/api"
+  }
+}
