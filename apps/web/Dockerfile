@@ -6,6 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
+
 
 # Install dependencies
 RUN npm install --workspace=@team-task-manager/web

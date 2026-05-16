@@ -1,65 +1,85 @@
-# Production Deployment Guide: Railway
+# Production Deployment Guide: TeamFlow
 
-This project is now production-hardened and optimized for Railway deployment using Docker and PostgreSQL.
+This project is fully production-hardened for Railway deployment using Docker and PostgreSQL.
 
-## 1. Prerequisites
+## 1. Quick Start (Local Testing)
 
-- A [Railway](https://railway.com/) account.
-- [Railway CLI](https://docs.railway.com/guides/cli) installed (optional but recommended).
+To run the entire stack locally (Frontend, Backend, and Database) exactly as it will run in production:
 
-## 2. Environment Variables
+```bash
+docker-compose up --build
+```
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:4000
+- **Postgres**: localhost:5432
 
-Set the following variables in your Railway service settings:
+---
 
-### Backend (API Service)
-| Variable | Value | Description |
-| --- | --- | --- |
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` | Railway will auto-populate this from the Postgres service. |
-| `JWT_ACCESS_SECRET` | `your-long-random-string` | Secret for access tokens. |
-| `JWT_REFRESH_SECRET` | `your-another-random-string` | Secret for refresh tokens. |
-| `CLIENT_URL` | `https://your-frontend-url.up.railway.app` | The public URL of your frontend service. |
-| `PORT` | `4000` | Internal port (Railway dynamic port will overwrite this). |
-| `NODE_ENV` | `production` | Set to production. |
+## 2. Railway Deployment
 
-### Frontend (Web Service)
-| Variable | Value | Description |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://your-api-url.up.railway.app/api` | Public URL of your backend service (include `/api`). |
-| `PORT` | `3000` | Internal port. |
+### Step A: Infrastructure Setup
+1. Create a new Project on Railway.
+2. Add a **PostgreSQL** service.
+3. Add two **GitHub Repo** services (or use the CLI to deploy from the same repo):
+   - **Service 1 (API)**: Point to `apps/api/Dockerfile`.
+   - **Service 2 (Web)**: Point to `apps/web/Dockerfile`.
+
+### Step B: Environment Variables
+Configure the following in the **Variables** tab for each service:
+
+#### Backend (API)
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+| `JWT_ACCESS_SECRET` | `your-secure-secret` |
+| `JWT_REFRESH_SECRET` | `your-secure-secret` |
+| `CLIENT_URL` | `https://your-frontend-domain.up.railway.app` |
+| `NODE_ENV` | `production` |
+
+#### Frontend (Web)
+| Variable | Value |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | `https://your-api-domain.up.railway.app/api` |
 
 > [!IMPORTANT]
-> Since `NEXT_PUBLIC_API_URL` is needed at **build time**, you must ensure it is defined in the Railway "Variables" section before the first build starts.
+> `NEXT_PUBLIC_API_URL` is required during the build phase. Set it **before** triggering the deployment.
 
-## 3. Deployment Steps
+---
 
-1. **Connect Repository**: Push your code to GitHub and connect it to a new Railway project.
-2. **Add Services**:
-   - Add a **PostgreSQL** database service.
-   - Add the **Backend service** (pointing to `apps/api/Dockerfile`).
-   - Add the **Frontend service** (pointing to `apps/web/Dockerfile`).
-3. **Configure Building**:
-   - The project includes `railway.api.json` and `railway.web.json` which tell Railway exactly which Dockerfiles to use.
-4. **Database Initialization**:
-   - The backend Docker image is configured to automatically run `prisma migrate deploy` and `prisma db seed` on startup. 
-   - Seeding only happens if the `User` table is empty.
+## 3. Reliability Features
 
-## 4. Local Build Validation (Optional)
+- **Database Connection Retries**: The backend will attempt to connect to the database 5 times with a 5-second delay between each attempt. This prevents the service from crashing if the database is still warming up.
+- **Auto-Migrations**: The API container automatically runs `prisma migrate deploy` on startup.
+- **Idempotent Seeding**: The system automatically seeds the database with demo users only if the database is empty.
+- **Next.js Standalone**: The frontend is optimized using Next.js standalone mode, resulting in significantly smaller image sizes and faster cold starts.
 
-To verify the images locally before pushing:
+---
 
-### Backend
+## 4. Manual Docker Commands
+
+If you need to build or push manually:
+
+### Build
 ```bash
-docker build -t team-task-api -f apps/api/Dockerfile .
+# Backend
+docker build -t teamflow-api -f apps/api/Dockerfile .
+
+# Frontend
+docker build -t teamflow-web --build-arg NEXT_PUBLIC_API_URL=https://your-api.com/api -f apps/web/Dockerfile .
 ```
 
-### Frontend
+### Run (Standalone)
 ```bash
-docker build -t team-task-web --build-arg NEXT_PUBLIC_API_URL=http://localhost:4000/api -f apps/web/Dockerfile .
+# Backend
+docker run -p 4000:4000 -e DATABASE_URL=... teamflow-api
+
+# Frontend
+docker run -p 3000:3000 teamflow-web
 ```
 
-## 5. Demo Accounts
+---
 
-After deployment, the following accounts are created automatically:
+## 5. Demo Credentials
 - **Admin**: `admin@demo.com` / `Password123!`
 - **Lead**: `lead@demo.com` / `Password123!`
 - **Member**: `member@demo.com` / `Password123!`
