@@ -2,10 +2,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+RUN apk add --no-cache openssl
+
 # Copy package files for workspace management
 COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
+COPY tsconfig.base.json ./
+
 
 
 # Install dependencies
@@ -25,7 +29,6 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install openssl for Prisma
 RUN apk add --no-cache openssl
 
 # Copy package files
@@ -46,4 +49,3 @@ EXPOSE 4000
 
 # Start command: Apply migrations, seed, and start the server
 CMD ["sh", "-c", "cd apps/api && npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/server.js"]
-

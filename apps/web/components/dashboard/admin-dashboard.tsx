@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 import { 
   BarChart, 
   Bar, 
@@ -38,8 +41,8 @@ export function AdminDashboard() {
         ]);
         setMetrics(mRes.data.metrics);
         setProductivity(pRes.data);
-      } catch (error) {
-        console.error("Failed to fetch admin data", error);
+      } catch {
+        toast.error("Unable to load admin dashboard");
       }
     };
     fetchData();

@@ -36,8 +36,8 @@ export default function AttendancePage() {
       } else {
         setActive(null);
       }
-    } catch (error) {
-      console.error("Failed to fetch attendance", error);
+    } catch {
+      toast.error("Unable to load attendance");
     }
   };
 
@@ -46,7 +46,7 @@ export default function AttendancePage() {
   }, []);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (active) {
       interval = setInterval(() => {
         const start = new Date(active.punchIn).getTime();

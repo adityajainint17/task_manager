@@ -25,6 +25,8 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
 
 export function TaskerDashboard() {
   const [metrics, setMetrics] = useState<any[]>([]);
@@ -45,8 +47,8 @@ export function TaskerDashboard() {
         setProductivity(pRes.data);
         setActiveTasks(tRes.data.tasks);
         setRecentAttendance(aRes.data);
-      } catch (error) {
-        console.error("Failed to fetch tasker data", error);
+      } catch {
+        toast.error("Unable to load dashboard data");
       }
     };
     fetchData();
@@ -55,8 +57,7 @@ export function TaskerDashboard() {
   const handleTaskAction = async (taskId: string, action: "start" | "pause" | "resume" | "complete") => {
     try {
       await api.post(`/tasks/${taskId}/${action}`);
-      toast.success(`Task ${action}ed successfully`);
-      // Refresh tasks
+      toast.success(action === "complete" ? "Task completed successfully" : `Task ${action}d successfully`);
       const { data } = await api.get("/tasks?mine=true&status=IN_PROGRESS");
       setActiveTasks(data.tasks);
     } catch (error: any) {

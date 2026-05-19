@@ -119,7 +119,7 @@ export function AuthForm() {
             <div className="relative">
               <Input 
                 type={showPassword ? "text" : "password"} 
-                placeholder="••••••••" 
+                placeholder="Password" 
                 {...register("password")} 
               />
               <button

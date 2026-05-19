@@ -48,8 +48,11 @@ export type LeaveRequest = {
   status: LeaveStatus;
   startDate: string;
   endDate: string;
+  createdAt: string;
+  updatedAt: string;
   user?: User;
 };
+
 
 export type Task = {
   id: string;

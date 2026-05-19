@@ -22,6 +22,7 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function LeadDashboard({ role }: { role: string }) {
   const [metrics, setMetrics] = useState<any[]>([]);
@@ -36,8 +37,8 @@ export function LeadDashboard({ role }: { role: string }) {
         ]);
         setMetrics(mRes.data.metrics);
         setProductivity(pRes.data);
-      } catch (error) {
-        console.error("Failed to fetch lead data", error);
+      } catch {
+        toast.error("Unable to load dashboard data");
       }
     };
     fetchData();

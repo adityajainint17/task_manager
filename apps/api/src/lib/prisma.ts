@@ -5,7 +5,8 @@ declare global {
 let prismaModule: any;
 
 if (process.env.PRISMA_CLIENT_TARGET === "sqlite") {
-  prismaModule = await import("../../generated/sqlite-client/index.js");
+  const sqliteClientPath = "../../generated/sqlite-client/index.js";
+  prismaModule = await import(sqliteClientPath);
 } else {
   prismaModule = await import("@prisma/client");
 }

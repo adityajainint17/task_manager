@@ -5,7 +5,8 @@ import { Search, Play, Pause, CheckCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/types";
-import { formatDate, isOverdue, statusLabel } from "@/lib/utils";
+import { formatDate, isOverdue, statusLabel, cn } from "@/lib/utils";
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,7 @@ export function MyTasksView() {
   const handleTaskAction = async (taskId: string, action: string) => {
     try {
       await api.post(`/tasks/${taskId}/${action}`);
-      toast.success(`Task ${action}ed`);
+      toast.success(action === "complete" ? "Task completed" : `Task ${action}d`);
       fetchTasks();
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? `Failed to ${action} task`);
@@ -158,4 +159,3 @@ export function MyTasksView() {
     </div>
   );
 }
-

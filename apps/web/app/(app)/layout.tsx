@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
 "use client";
 
+import type { ReactNode } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRequireAuth } from "@/hooks/use-auth";

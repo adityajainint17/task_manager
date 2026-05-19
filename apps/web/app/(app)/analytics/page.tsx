@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 import { 
   AreaChart, 
   Area, 
@@ -43,8 +46,8 @@ export default function AnalyticsPage() {
         ]);
         setMetrics(mRes.data.metrics);
         setProductivity(pRes.data);
-      } catch (error) {
-        console.error("Failed to fetch analytics", error);
+      } catch {
+        toast.error("Unable to load analytics");
       }
     };
     fetchData();
@@ -207,7 +210,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm">Aditya completed Task #1042</p>
-                  <p className="text-xs text-muted-foreground">Marketing • 14 minutes ago</p>
+                  <p className="text-xs text-muted-foreground">Marketing - 14 minutes ago</p>
                 </div>
               </div>
               <ArrowUpRight size={18} className="text-muted-foreground" />

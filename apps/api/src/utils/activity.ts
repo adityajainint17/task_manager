@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js";
 type Input = {
   type: ActivityType;
   message: string;
-  projectId: string;
+  projectId?: string | null;
   actorId?: string;
   taskId?: string;
   metadata?: unknown;

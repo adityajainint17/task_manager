@@ -14,6 +14,7 @@ model User {
   email          String          @unique
   passwordHash   String
   avatarColor    String          @default("#6366f1")
+  role           String          @default("TASKER")
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   ownedProjects  Project[]       @relation("ProjectOwner")
@@ -23,6 +24,9 @@ model User {
   comments       Comment[]
   activities     ActivityLog[]   @relation("ActivityActor")
   refreshTokens  RefreshToken[]
+  attendance     Attendance[]
+  taskSessions   TaskSession[]
+  leaveRequests  LeaveRequest[]
 }
 
 model Project {
@@ -75,9 +79,55 @@ model Task {
   creator      User          @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   comments     Comment[]
   activities   ActivityLog[]
+  taskSessions TaskSession[]
 
   @@index([projectId, status])
   @@index([assigneeId])
+}
+
+model Attendance {
+  id         String   @id @default(cuid())
+  userId     String
+  punchIn    DateTime @default(now())
+  punchOut   DateTime?
+  totalHours Float?
+  status     String   @default("PRESENT")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, punchIn])
+}
+
+model TaskSession {
+  id             String   @id @default(cuid())
+  taskId         String
+  userId         String
+  startedAt      DateTime @default(now())
+  pausedAt       DateTime?
+  endedAt        DateTime?
+  activeDuration Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  task           Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model LeaveRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  reason    String
+  status    String   @default("PENDING")
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Comment {
@@ -98,11 +148,11 @@ model ActivityLog {
   type        String
   message     String
   metadata    String?
-  projectId   String
+  projectId   String?
   taskId      String?
   actorId     String?
   createdAt   DateTime     @default(now())
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   task        Task?        @relation(fields: [taskId], references: [id], onDelete: Cascade)
   actor       User?        @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
 

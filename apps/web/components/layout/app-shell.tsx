@@ -12,13 +12,10 @@ import {
   Moon, 
   Search, 
   SunMedium, 
-  UserSquare2,
   Clock,
   Calendar,
   BarChart3,
-  Users,
   ShieldCheck,
-  Settings,
   Bell,
   Menu,
   X,
@@ -63,9 +60,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       { href: "/attendance", label: "Attendance", icon: Clock, roles: ["ADMIN", "PLS", "QLS", "TASKER"] },
       { href: "/leave", label: "Apply Leave", icon: Calendar, roles: ["ADMIN", "PLS", "QLS", "TASKER"] },
       { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["ADMIN", "PLS", "QLS"] },
-      { href: "/team", label: "Team Members", icon: Users, roles: ["ADMIN", "PLS"] },
-      { href: "/reviews", label: "Reviews", icon: ShieldCheck, roles: ["QLS", "ADMIN"] },
-      { href: "/settings", label: "Settings", icon: Settings, roles: ["ADMIN", "PLS", "QLS", "TASKER"] },
     ];
     return items.filter(item => item.roles.includes(user?.role || ""));
   }, [user?.role]);
@@ -78,15 +72,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           setIsPunchedIn(true);
           setPunchInTime(data.punchIn);
         }
-      } catch (error) {
-        console.error("Failed to fetch attendance", error);
+      } catch {
+        toast.error("Unable to load attendance status");
       }
     };
     if (user) fetchAttendance();
   }, [user]);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPunchedIn && punchInTime) {
       interval = setInterval(() => {
         const start = new Date(punchInTime).getTime();
@@ -126,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await api.post("/auth/logout");
+    await api.post("/auth/logout").catch(() => undefined);
     clearSession();
     toast.success("Signed out");
     router.replace("/login");
@@ -240,7 +234,28 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <X size={20} />
                   </button>
                 </div>
-                {/* ... existing nav items ... */}
+                <nav className="space-y-1">
+                  {navItems.map((item) => {
+                    const active = pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                        )}
+                      >
+                        <Icon size={20} />
+                        <span className="font-medium text-sm">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
               </div>
             </motion.aside>
           </>
@@ -272,7 +287,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 placeholder="Search workspace..." 
                 className="bg-transparent border-none outline-none text-sm w-full placeholder:text-muted-foreground/50"
               />
-              <span className="text-[10px] font-mono text-muted-foreground bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">⌘K</span>
+              <span className="text-[10px] font-mono text-muted-foreground bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Ctrl K</span>
             </div>
             
             <Button variant="outline" size="icon" className="rounded-xl border-border/50" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>

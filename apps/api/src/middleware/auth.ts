@@ -16,8 +16,10 @@ export const requireAuth = (req: AuthenticatedRequest, _res: Response, next: Nex
   req.user = {
     id: payload.id,
     email: payload.email,
-    name: payload.name
+    name: payload.name,
+    role: payload.role
   };
+
 
   return next();
 };

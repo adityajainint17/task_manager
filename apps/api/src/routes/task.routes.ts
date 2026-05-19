@@ -1,4 +1,6 @@
 import { Router } from "express";
+import dayjs from "dayjs";
+
 import { StatusCodes } from "http-status-codes";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -44,6 +46,24 @@ const getMembership = async (projectId: string, userId: string) =>
     }
   });
 
+const requireTaskWorkAccess = async (taskId: string, userId: string) => {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task) {
+    throw new AppError("Task not found", StatusCodes.NOT_FOUND);
+  }
+
+  const membership = await getMembership(task.projectId, userId);
+  const isAdmin = membership?.role === "ADMIN";
+  const isAssignee = task.assigneeId === userId;
+
+  if (!membership || (!isAdmin && !isAssignee)) {
+    throw new AppError("Only project admins or the assignee can work on this task", StatusCodes.FORBIDDEN);
+  }
+
+  return task;
+};
+
 taskRouter.get(
   "/",
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -77,6 +97,10 @@ taskRouter.get(
         assignee: { select: { id: true, name: true, email: true, avatarColor: true } },
         creator: { select: { id: true, name: true, email: true, avatarColor: true } },
         project: { select: { id: true, name: true, key: true, color: true } },
+        taskSessions: {
+          where: { userId: req.user!.id, endedAt: null },
+          orderBy: { startedAt: "desc" }
+        },
         comments: {
           include: { author: { select: { id: true, name: true, email: true, avatarColor: true } } },
           orderBy: { createdAt: "asc" }
@@ -313,8 +337,7 @@ taskRouter.post(
 
     await checkPunchIn(userId);
 
-    const task = await prisma.task.findUnique({ where: { id: taskId } });
-    if (!task) throw new AppError("Task not found", StatusCodes.NOT_FOUND);
+    const task = await requireTaskWorkAccess(taskId, userId);
 
     // Check if there's already an active session
     const activeSession = await prisma.taskSession.findFirst({
@@ -355,6 +378,8 @@ taskRouter.post(
     const taskId = String(req.params.id);
     const userId = req.user!.id;
 
+    const task = await requireTaskWorkAccess(taskId, userId);
+
     const session = await prisma.taskSession.findFirst({
       where: { taskId, userId, endedAt: null, pausedAt: null },
       orderBy: { startedAt: "desc" }
@@ -377,11 +402,12 @@ taskRouter.post(
 
     await logActivity({
       type: "TASK_PAUSED",
-      message: `${req.user!.name} paused ${session.id}`, // Should probably use task title
+      message: `${req.user!.name} paused ${task.title}`,
       actorId: userId,
-      projectId: "system", // Need to get task first if we want title/projectId
-      taskId: taskId
+      projectId: task.projectId,
+      taskId
     });
+
 
     res.json(updatedSession);
   })
@@ -394,6 +420,7 @@ taskRouter.post(
     const userId = req.user!.id;
 
     await checkPunchIn(userId);
+    const task = await requireTaskWorkAccess(taskId, userId);
 
     const session = await prisma.taskSession.findFirst({
       where: { taskId, userId, endedAt: null, NOT: { pausedAt: null } },
@@ -414,10 +441,12 @@ taskRouter.post(
 
     await logActivity({
       type: "TASK_RESUMED",
-      message: `${req.user!.name} resumed task`,
+      message: `${req.user!.name} resumed ${task.title}`,
       actorId: userId,
-      taskId: taskId
+      projectId: task.projectId,
+      taskId
     });
+
 
     res.json(updatedSession);
   })
@@ -428,6 +457,8 @@ taskRouter.post(
   asyncHandler(async (req: AuthenticatedRequest, res) => {
     const taskId = String(req.params.id);
     const userId = req.user!.id;
+
+    await requireTaskWorkAccess(taskId, userId);
 
     const session = await prisma.taskSession.findFirst({
       where: { taskId, userId, endedAt: null },
@@ -468,4 +499,3 @@ taskRouter.post(
 );
 
 export { taskRouter };
-

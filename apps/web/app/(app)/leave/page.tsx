@@ -30,8 +30,8 @@ export default function LeavePage() {
     try {
       const { data } = await api.get("/leave/history");
       setHistory(data);
-    } catch (error) {
-      console.error("Failed to fetch leave history", error);
+    } catch {
+      toast.error("Unable to load leave history");
     }
   };
 

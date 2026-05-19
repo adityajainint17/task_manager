@@ -47,14 +47,15 @@ analyticsRouter.get(
       where: { userId },
       select: { totalHours: true }
     });
-    const totalWorkHours = attendance.reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
+    const totalWorkHours = attendance.reduce((acc: number, curr: { totalHours: number | null }) => acc + (curr.totalHours || 0), 0);
+
 
     const sessions = await prisma.taskSession.findMany({
       where: { userId, endedAt: { not: null } },
       select: { activeDuration: true }
     });
     const avgTaskTime = sessions.length > 0 
-      ? sessions.reduce((acc, curr) => acc + curr.activeDuration, 0) / sessions.length / 3600 
+      ? sessions.reduce((acc: number, curr: { activeDuration: number }) => acc + curr.activeDuration, 0) / sessions.length / 3600 
       : 0;
 
     res.json({
@@ -88,7 +89,8 @@ analyticsRouter.get(
         select: { totalHours: true }
       });
 
-      const hours = attendance.reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
+      const hours = attendance.reduce((acc: number, curr: { totalHours: number | null }) => acc + (curr.totalHours || 0), 0);
+
       
       return {
         date: date.format("MMM DD"),
